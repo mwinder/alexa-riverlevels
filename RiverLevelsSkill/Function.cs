@@ -14,32 +14,19 @@ namespace RiverLevelsSkill
 {
     public class Function
     {
-
-        /// <summary>
-        /// A simple function that takes a string and does a ToUpper
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
         public SkillResponse Handler(SkillRequest input, ILambdaContext context)
         {
-            var response = new SkillResponse
-            {
-                Response = new ResponseBody { ShouldEndSession = false }
-            };
-            IOutputSpeech innerResponse = null;
             var log = context.Logger;
             log.LogLine($"Skill Request Object:");
             log.LogLine(JsonConvert.SerializeObject(input));
 
-            var allResources = GetResources();
-            var resource = allResources.FirstOrDefault();
+            var resource = GetResources().FirstOrDefault();
 
+            var response = new SkillResponse { Version = "1.0" };
             if (input.GetRequestType() == typeof(LaunchRequest))
             {
                 log.LogLine($"Default LaunchRequest made: 'Alexa, open Science Facts");
-                innerResponse = new PlainTextOutputSpeech();
-                (innerResponse as PlainTextOutputSpeech).Text = EmitFact(resource, true);
+                response.Response = Fact(resource, true);
             }
             else if (input.GetRequestType() == typeof(IntentRequest))
             {
@@ -48,52 +35,70 @@ namespace RiverLevelsSkill
                 {
                     case "AMAZON.CancelIntent":
                         log.LogLine($"AMAZON.CancelIntent: send StopMessage");
-                        innerResponse = new PlainTextOutputSpeech();
-                        (innerResponse as PlainTextOutputSpeech).Text = resource.StopMessage;
-                        response.Response.ShouldEndSession = true;
+                        response.Response = Stop(resource);
                         break;
                     case "AMAZON.StopIntent":
                         log.LogLine($"AMAZON.StopIntent: send StopMessage");
-                        innerResponse = new PlainTextOutputSpeech();
-                        (innerResponse as PlainTextOutputSpeech).Text = resource.StopMessage;
-                        response.Response.ShouldEndSession = true;
+                        response.Response = Stop(resource);
                         break;
                     case "AMAZON.HelpIntent":
                         log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
-                        innerResponse = new PlainTextOutputSpeech();
-                        (innerResponse as PlainTextOutputSpeech).Text = resource.HelpMessage;
+                        response.Response = Help(resource);
                         break;
                     case "GetFactIntent":
-                        log.LogLine($"GetFactIntent sent: send new fact");
-                        innerResponse = new PlainTextOutputSpeech();
-                        (innerResponse as PlainTextOutputSpeech).Text = EmitFact(resource, false);
-                        break;
                     case "GetNewFactIntent":
-                        log.LogLine($"GetFactIntent sent: send new fact");
-                        innerResponse = new PlainTextOutputSpeech();
-                        (innerResponse as PlainTextOutputSpeech).Text = EmitFact(resource, false);
+                        log.LogLine($"GetFactIntent: send Fact");
+                        response.Response = Fact(resource, false);
                         break;
                     default:
                         log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
-                        innerResponse = new PlainTextOutputSpeech();
-                        (innerResponse as PlainTextOutputSpeech).Text = resource.HelpReprompt;
+                        response.Response = Help(resource);
                         break;
                 }
             }
-            response.Response.OutputSpeech = innerResponse;
-            response.Version = "1.0";
             log.LogLine($"Skill Response Object...");
             log.LogLine(JsonConvert.SerializeObject(response));
             return response;
         }
 
-        private static string EmitFact(FactResource resource, bool withPreface)
+        private static ResponseBody Stop(FactResource resource)
         {
-            var r = new Random();
-            if (withPreface)
-                return resource.GetFactMessage +
-                       resource.Facts[r.Next(resource.Facts.Count)];
-            return resource.Facts[r.Next(resource.Facts.Count)];
+            return new ResponseBody
+            {
+                ShouldEndSession = true,
+                OutputSpeech = new PlainTextOutputSpeech
+                {
+                    Text = resource.StopMessage
+                }
+            };
+        }
+
+        private static ResponseBody Help(FactResource resource)
+        {
+            return new ResponseBody
+            {
+                ShouldEndSession = false,
+                OutputSpeech = new PlainTextOutputSpeech
+                {
+                    Text = resource.HelpMessage
+                }
+            };
+        }
+
+        private static ResponseBody Fact(FactResource resource, bool withPreface)
+        {
+            var next = new Random().Next(resource.Facts.Count);
+
+            return new ResponseBody
+            {
+                ShouldEndSession = false,
+                OutputSpeech = new PlainTextOutputSpeech
+                {
+                    Text = withPreface
+                        ? resource.GetFactMessage + resource.Facts[next]
+                        : resource.Facts[next]
+                },
+            };
         }
 
         private static IEnumerable<FactResource> GetResources()
