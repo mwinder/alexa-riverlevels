@@ -17,12 +17,12 @@ namespace RiverLevelsSkill
         public SkillResponse Handler(SkillRequest request, ILambdaContext context)
         {
             var log = context.Logger;
+
             log.LogLine($"Skill Request:");
             log.LogLine(JsonConvert.SerializeObject(request));
 
-            var resource = GetResources().FirstOrDefault();
+            var response = Response(request, log, GetResources().FirstOrDefault());
 
-            var response = Response(request, log, resource);
             log.LogLine($"Skill Response:");
             log.LogLine(JsonConvert.SerializeObject(response));
 
