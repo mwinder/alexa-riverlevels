@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Alexa.NET.Request;
 using Alexa.NET.Request.Type;
 using Alexa.NET.Response;
@@ -14,6 +15,8 @@ namespace RiverLevelsSkill
 {
     public class Function
     {
+        private static readonly Uri ApiUrl = new Uri("http://api.rainchasers.com/v1");
+
         public SkillResponse Handler(SkillRequest request, ILambdaContext context)
         {
             var log = context.Logger;
@@ -21,7 +24,7 @@ namespace RiverLevelsSkill
             log.LogLine($"Skill Request:");
             log.LogLine(JsonConvert.SerializeObject(request));
 
-            var response = Response(request, log, GetResources().FirstOrDefault());
+            var response = Response(request, log, Resources().FirstOrDefault());
 
             log.LogLine($"Skill Response:");
             log.LogLine(JsonConvert.SerializeObject(response));
@@ -29,12 +32,12 @@ namespace RiverLevelsSkill
             return response;
         }
 
-        private static SkillResponse Response(SkillRequest input, ILambdaLogger log, FactResource resource)
+        private static SkillResponse Response(SkillRequest input, ILambdaLogger log, RootResource resource)
         {
             if (input.GetRequestType() == typeof(LaunchRequest))
             {
-                log.LogLine($"Default LaunchRequest made: 'Alexa, open Science Facts");
-                return Fact(resource, true);
+                log.LogLine($"LaunchRequest");
+                return Help(resource);
             }
 
             var intentRequest = (IntentRequest)input.Request;
@@ -49,17 +52,19 @@ namespace RiverLevelsSkill
                 case "AMAZON.HelpIntent":
                     log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
                     return Help(resource);
-                case "GetFactIntent":
-                case "GetNewFactIntent":
-                    log.LogLine($"GetFactIntent: send Fact");
-                    return Fact(resource, true);
+                case "LevelDeeIntent":
+                    log.LogLine($"LevelDeeIntent");
+                    return Level(resource.Level("Dee"), log);
+                case "LevelNorthTyneIntent":
+                    log.LogLine($"LevelNorthTyneIntent");
+                    return Level(resource.Level("North Tyne"), log);
                 default:
                     log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
                     return Help(resource);
             }
         }
 
-        private static SkillResponse Stop(FactResource resource)
+        private static SkillResponse Stop(RootResource resource)
         {
             return new SkillResponse
             {
@@ -75,7 +80,7 @@ namespace RiverLevelsSkill
             };
         }
 
-        private static SkillResponse Help(FactResource resource)
+        private static SkillResponse Help(RootResource resource)
         {
             return new SkillResponse
             {
@@ -91,8 +96,21 @@ namespace RiverLevelsSkill
             };
         }
 
-        private static SkillResponse Fact(FactResource resource, bool preface)
+        private static SkillResponse Level(RiverResource resource, ILambdaLogger log)
         {
+            var client = new HttpClient();
+            var requestUri = new Uri($"{ApiUrl}/river/{resource.Uuid}");
+
+            log.LogLine($"Requesting: {requestUri}");
+
+            var result = client.GetAsync(requestUri).Result;
+            var content = result.Content.ReadAsStringAsync().Result;
+
+            log.LogLine(content);
+
+            var message = (dynamic)JsonConvert.DeserializeObject(content);
+            var level = message.data.state.text;
+
             return new SkillResponse
             {
                 Version = "1.0",
@@ -101,63 +119,52 @@ namespace RiverLevelsSkill
                     ShouldEndSession = false,
                     OutputSpeech = new PlainTextOutputSpeech
                     {
-                        Text = resource.RandomFact(preface)
+                        Text = $"The river {resource.Name} is {level}",
                     },
                 }
             };
         }
 
-        private static IEnumerable<FactResource> GetResources()
+        private static IEnumerable<RootResource> Resources()
         {
-            yield return new FactResource("en-US")
+            yield return new RootResource("en-GB")
             {
-                SkillName = "American Space Facts",
-                GetFactMessage = "Here's your fact: ",
-                HelpMessage = "You can say tell me a space fact, or, you can say exit... What can I help you with?",
-                HelpReprompt = "What can I help you with?",
-                StopMessage = "Goodbye!",
-                Facts = new List<string>
+                Description = "UK river levels",
+                HelpMessage = "Ask me for the level of your favourite river",
+                StopMessage = "See you on the river!",
+                Items = new List<RiverResource>
                 {
-                    "A year on Mercury is just 88 days long.",
-                    "Despite being farther from the Sun, Venus experiences higher temperatures than Mercury.",
-                    "Venus rotates counter-clockwise, possibly because of a collision in the past with an asteroid.",
-                    "On Mars, the Sun appears about half the size as it does on Earth.",
-                    "Earth is the only planet not named after a god.",
-                    "Jupiter has the shortest day of all the planets.",
-                    "The Milky Way galaxy will collide with the Andromeda Galaxy in about 5 billion years.",
-                    "The Sun contains 99.86% of the mass in the Solar System.",
-                    "The Sun is an almost perfect sphere.",
-                    "A total solar eclipse can happen once every 1 to 2 years. This makes them a rare event.",
-                    "Saturn radiates two and a half times more energy into space than it receives from the sun.",
-                    "The temperature inside the Sun can reach 15 million degrees Celsius.",
-                    "The Moon is moving approximately 3.8 cm away from our planet every year.",
-                },
+                    new RiverResource { Name = "Dee", Uuid = "75148ca0-ee5e-4344-8534-db9a59ed4cd0" },
+                    new RiverResource { Name = "North Tyne", Uuid = "9a417b1b-464e-4f49-be17-bbb38241e500" }
+                }
             };
         }
     }
 
-    public class FactResource
+    public class RootResource
     {
-        public FactResource(string language)
+        public RootResource(string language)
         {
             Language = language;
-            Facts = new List<string>();
         }
 
         public string Language { get; set; }
-        public string SkillName { get; set; }
-        public List<string> Facts { get; set; }
-        public string GetFactMessage { get; set; }
+        public string Description { get; set; }
         public string HelpMessage { get; set; }
-        public string HelpReprompt { get; set; }
         public string StopMessage { get; set; }
+        public IEnumerable<RiverResource> Items { get; set; }
 
-        public string RandomFact(bool preface)
+        public RiverResource Level(string river)
         {
-            var next = new Random().Next(Facts.Count);
-            return preface
-                ? GetFactMessage + Facts[next]
-                : Facts[next];
+            return Items.SingleOrDefault(x => x.Name == river) ?? RiverResource.Unknown;
         }
+    }
+
+    public class RiverResource
+    {
+        public static RiverResource Unknown => new RiverResource { Name = "Unknown" };
+
+        public string Name { get; set; }
+        public string Uuid { get; set; }
     }
 }

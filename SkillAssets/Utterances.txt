@@ -1,12 +1,11 @@
-GetFactIntent give me a space fact
-GetFactIntent tell me a space fact
-GetFactIntent give me a fact
-GetFactIntent tell me a fact
-GetFactIntent tell me something
+LevelDeeIntent level for river Dee
+LevelDeeIntent level for Dee
+LevelDeeIntent river Dee
+LevelDeeIntent Dee
 
-GetNewFactIntent tell me a new fact
-GetNewFactIntent tell me another fact
-GetNewFactIntent tell me something new
+LevelNorthTyneIntent level for river North Tyne
+LevelNorthTyneIntent level for North Tyne
+LevelNorthTyneIntent North Tyne
 
 AMAZON.StopIntent we're done
 AMAZON.StopIntent that is enough
