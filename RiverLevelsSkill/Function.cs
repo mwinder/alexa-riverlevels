@@ -91,10 +91,8 @@ namespace RiverLevelsSkill
             };
         }
 
-        private static SkillResponse Fact(FactResource resource, bool withPreface)
+        private static SkillResponse Fact(FactResource resource, bool preface)
         {
-            var next = new Random().Next(resource.Facts.Count);
-
             return new SkillResponse
             {
                 Version = "1.0",
@@ -103,9 +101,7 @@ namespace RiverLevelsSkill
                     ShouldEndSession = false,
                     OutputSpeech = new PlainTextOutputSpeech
                     {
-                        Text = withPreface
-                            ? resource.GetFactMessage + resource.Facts[next]
-                            : resource.Facts[next]
+                        Text = resource.RandomFact(preface)
                     },
                 }
             };
@@ -155,5 +151,13 @@ namespace RiverLevelsSkill
         public string HelpMessage { get; set; }
         public string HelpReprompt { get; set; }
         public string StopMessage { get; set; }
+
+        public string RandomFact(bool preface)
+        {
+            var next = new Random().Next(Facts.Count);
+            return preface
+                ? GetFactMessage + Facts[next]
+                : Facts[next];
+        }
     }
 }
