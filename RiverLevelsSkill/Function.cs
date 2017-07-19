@@ -14,90 +14,100 @@ namespace RiverLevelsSkill
 {
     public class Function
     {
-        public SkillResponse Handler(SkillRequest input, ILambdaContext context)
+        public SkillResponse Handler(SkillRequest request, ILambdaContext context)
         {
             var log = context.Logger;
-            log.LogLine($"Skill Request Object:");
-            log.LogLine(JsonConvert.SerializeObject(input));
+            log.LogLine($"Skill Request:");
+            log.LogLine(JsonConvert.SerializeObject(request));
 
             var resource = GetResources().FirstOrDefault();
 
-            var response = new SkillResponse { Version = "1.0" };
-            if (input.GetRequestType() == typeof(LaunchRequest))
-            {
-                log.LogLine($"Default LaunchRequest made: 'Alexa, open Science Facts");
-                response.Response = Fact(resource, true);
-            }
-            else if (input.GetRequestType() == typeof(IntentRequest))
-            {
-                var intentRequest = (IntentRequest)input.Request;
-                switch (intentRequest.Intent.Name)
-                {
-                    case "AMAZON.CancelIntent":
-                        log.LogLine($"AMAZON.CancelIntent: send StopMessage");
-                        response.Response = Stop(resource);
-                        break;
-                    case "AMAZON.StopIntent":
-                        log.LogLine($"AMAZON.StopIntent: send StopMessage");
-                        response.Response = Stop(resource);
-                        break;
-                    case "AMAZON.HelpIntent":
-                        log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
-                        response.Response = Help(resource);
-                        break;
-                    case "GetFactIntent":
-                    case "GetNewFactIntent":
-                        log.LogLine($"GetFactIntent: send Fact");
-                        response.Response = Fact(resource, false);
-                        break;
-                    default:
-                        log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
-                        response.Response = Help(resource);
-                        break;
-                }
-            }
-            log.LogLine($"Skill Response Object...");
+            var response = Response(request, log, resource);
+            log.LogLine($"Skill Response:");
             log.LogLine(JsonConvert.SerializeObject(response));
+
             return response;
         }
 
-        private static ResponseBody Stop(FactResource resource)
+        private static SkillResponse Response(SkillRequest input, ILambdaLogger log, FactResource resource)
         {
-            return new ResponseBody
+            if (input.GetRequestType() == typeof(LaunchRequest))
             {
-                ShouldEndSession = true,
-                OutputSpeech = new PlainTextOutputSpeech
+                log.LogLine($"Default LaunchRequest made: 'Alexa, open Science Facts");
+                return Fact(resource, true);
+            }
+
+            var intentRequest = (IntentRequest)input.Request;
+            switch (intentRequest.Intent.Name)
+            {
+                case "AMAZON.CancelIntent":
+                    log.LogLine($"AMAZON.CancelIntent: send StopMessage");
+                    return Stop(resource);
+                case "AMAZON.StopIntent":
+                    log.LogLine($"AMAZON.StopIntent: send StopMessage");
+                    return Stop(resource);
+                case "AMAZON.HelpIntent":
+                    log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
+                    return Help(resource);
+                case "GetFactIntent":
+                case "GetNewFactIntent":
+                    log.LogLine($"GetFactIntent: send Fact");
+                    return Fact(resource, true);
+                default:
+                    log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
+                    return Help(resource);
+            }
+        }
+
+        private static SkillResponse Stop(FactResource resource)
+        {
+            return new SkillResponse
+            {
+                Version = "1.0",
+                Response = new ResponseBody
                 {
-                    Text = resource.StopMessage
+                    ShouldEndSession = true,
+                    OutputSpeech = new PlainTextOutputSpeech
+                    {
+                        Text = resource.StopMessage
+                    }
                 }
             };
         }
 
-        private static ResponseBody Help(FactResource resource)
+        private static SkillResponse Help(FactResource resource)
         {
-            return new ResponseBody
+            return new SkillResponse
             {
-                ShouldEndSession = false,
-                OutputSpeech = new PlainTextOutputSpeech
+                Version = "1.0",
+                Response = new ResponseBody
                 {
-                    Text = resource.HelpMessage
+                    ShouldEndSession = false,
+                    OutputSpeech = new PlainTextOutputSpeech
+                    {
+                        Text = resource.HelpMessage
+                    }
                 }
             };
         }
 
-        private static ResponseBody Fact(FactResource resource, bool withPreface)
+        private static SkillResponse Fact(FactResource resource, bool withPreface)
         {
             var next = new Random().Next(resource.Facts.Count);
 
-            return new ResponseBody
+            return new SkillResponse
             {
-                ShouldEndSession = false,
-                OutputSpeech = new PlainTextOutputSpeech
+                Version = "1.0",
+                Response = new ResponseBody
                 {
-                    Text = withPreface
-                        ? resource.GetFactMessage + resource.Facts[next]
-                        : resource.Facts[next]
-                },
+                    ShouldEndSession = false,
+                    OutputSpeech = new PlainTextOutputSpeech
+                    {
+                        Text = withPreface
+                            ? resource.GetFactMessage + resource.Facts[next]
+                            : resource.Facts[next]
+                    },
+                }
             };
         }
 
