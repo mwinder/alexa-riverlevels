@@ -52,6 +52,9 @@ namespace RiverLevelsSkill
                 case "AMAZON.HelpIntent":
                     log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
                     return Help(resource);
+                case "LevelCloughIntent":
+                    log.LogLine($"LevelCloughIntent");
+                    return Level(resource.River("Clough"), log);
                 case "LevelDeeIntent":
                     log.LogLine($"LevelDeeIntent");
                     return Level(resource.River("Dee"), log);
