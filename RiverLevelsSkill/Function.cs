@@ -54,10 +54,10 @@ namespace RiverLevelsSkill
                     return Help(resource);
                 case "LevelDeeIntent":
                     log.LogLine($"LevelDeeIntent");
-                    return Level(resource.Level("Dee"), log);
+                    return Level(resource.River("Dee"), log);
                 case "LevelNorthTyneIntent":
                     log.LogLine($"LevelNorthTyneIntent");
-                    return Level(resource.Level("North Tyne"), log);
+                    return Level(resource.River("North Tyne"), log);
                 default:
                     log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
                     return Help(resource);
@@ -108,8 +108,7 @@ namespace RiverLevelsSkill
 
             log.LogLine(content);
 
-            var message = (dynamic)JsonConvert.DeserializeObject(content);
-            var level = message.data.state.text;
+            var river = (dynamic)JsonConvert.DeserializeObject(content);
 
             return new SkillResponse
             {
@@ -119,7 +118,7 @@ namespace RiverLevelsSkill
                     ShouldEndSession = false,
                     OutputSpeech = new PlainTextOutputSpeech
                     {
-                        Text = $"The river {resource.Name} is {level}",
+                        Text = $"The river {river.data.river}, {river.data.section} is {river.data.state.text}, {river.data.state.value}",
                     },
                 }
             };
@@ -132,8 +131,9 @@ namespace RiverLevelsSkill
                 Description = "UK river levels",
                 HelpMessage = "Ask me for the level of your favourite river",
                 StopMessage = "See you on the river!",
-                Items = new List<RiverResource>
+                Rivers = new List<RiverResource>
                 {
+                    new RiverResource { Name = "Clough", Uuid = "4b50bd9e-9c88-4795-93e0-b1e5c213e9ed" },
                     new RiverResource { Name = "Dee", Uuid = "75148ca0-ee5e-4344-8534-db9a59ed4cd0" },
                     new RiverResource { Name = "North Tyne", Uuid = "9a417b1b-464e-4f49-be17-bbb38241e500" }
                 }
@@ -152,11 +152,11 @@ namespace RiverLevelsSkill
         public string Description { get; set; }
         public string HelpMessage { get; set; }
         public string StopMessage { get; set; }
-        public IEnumerable<RiverResource> Items { get; set; }
+        public IEnumerable<RiverResource> Rivers { get; set; }
 
-        public RiverResource Level(string river)
+        public RiverResource River(string river)
         {
-            return Items.SingleOrDefault(x => x.Name == river) ?? RiverResource.Unknown;
+            return Rivers.SingleOrDefault(x => x.Name == river) ?? RiverResource.Unknown;
         }
     }
 
