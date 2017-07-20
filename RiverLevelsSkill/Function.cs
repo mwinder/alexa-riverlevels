@@ -24,7 +24,7 @@ namespace RiverLevelsSkill
             log.LogLine($"Skill Request:");
             log.LogLine(JsonConvert.SerializeObject(request));
 
-            var response = Response(request, log, Resources().FirstOrDefault());
+            var response = Response(Resources().FirstOrDefault(), log, request);
 
             log.LogLine($"Skill Response:");
             log.LogLine(JsonConvert.SerializeObject(response));
@@ -32,7 +32,7 @@ namespace RiverLevelsSkill
             return response;
         }
 
-        private static SkillResponse Response(SkillRequest input, ILambdaLogger log, RootResource resource)
+        private static SkillResponse Response(RootResource resource, ILambdaLogger log, SkillRequest input)
         {
             if (input.GetRequestType() == typeof(LaunchRequest))
             {
