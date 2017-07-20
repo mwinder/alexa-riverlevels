@@ -40,31 +40,29 @@ namespace RiverLevelsSkill
                 return Help(resource);
             }
 
-            var intentRequest = (IntentRequest)input.Request;
-            switch (intentRequest.Intent.Name)
+            if (input.GetRequestType() == typeof(IntentRequest))
             {
-                case "AMAZON.CancelIntent":
-                    log.LogLine($"AMAZON.CancelIntent: send StopMessage");
-                    return Stop(resource);
-                case "AMAZON.StopIntent":
-                    log.LogLine($"AMAZON.StopIntent: send StopMessage");
-                    return Stop(resource);
-                case "AMAZON.HelpIntent":
-                    log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
-                    return Help(resource);
-                case "LevelCloughIntent":
-                    log.LogLine($"LevelCloughIntent");
-                    return Level(resource.River("Clough"), log);
-                case "LevelDeeIntent":
-                    log.LogLine($"LevelDeeIntent");
-                    return Level(resource.River("Dee"), log);
-                case "LevelNorthTyneIntent":
-                    log.LogLine($"LevelNorthTyneIntent");
-                    return Level(resource.River("North Tyne"), log);
-                default:
-                    log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
-                    return Help(resource);
+                var request = (IntentRequest)input.Request;
+                log.LogLine($"{request.Intent.Name}");
+                switch (request.Intent.Name)
+                {
+                    case "AMAZON.CancelIntent":
+                        return Stop(resource);
+                    case "AMAZON.StopIntent":
+                        return Stop(resource);
+                    case "AMAZON.HelpIntent":
+                        return Help(resource);
+                    case "LevelCloughIntent":
+                        return Level(resource.River("Clough"), log);
+                    case "LevelDeeIntent":
+                        return Level(resource.River("Dee"), log);
+                    case "LevelNorthTyneIntent":
+                        return Level(resource.River("North Tyne"), log);
+                }
             }
+
+            log.LogLine($"Unknown command: {input.Request.Type}");
+            return Help(resource);
         }
 
         private static SkillResponse Stop(RootResource resource)
