@@ -53,11 +53,11 @@ namespace RiverLevelsSkill
                     case "AMAZON.HelpIntent":
                         return Help(resource);
                     case "LevelCloughIntent":
-                        return Level(resource.River("Clough"), log);
+                        return Level(log, resource.River("Clough"));
                     case "LevelDeeIntent":
-                        return Level(resource.River("Dee"), log);
+                        return Level(log, resource.River("Dee"));
                     case "LevelNorthTyneIntent":
-                        return Level(resource.River("North Tyne"), log);
+                        return Level(log, resource.River("North Tyne"));
                 }
             }
 
@@ -97,7 +97,7 @@ namespace RiverLevelsSkill
             };
         }
 
-        private static SkillResponse Level(RiverResource resource, ILambdaLogger log)
+        private static SkillResponse Level(ILambdaLogger log, RiverResource resource)
         {
             var client = new HttpClient();
             var requestUri = new Uri($"{ApiUrl}/river/{resource.Uuid}");
