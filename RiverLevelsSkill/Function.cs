@@ -58,6 +58,8 @@ namespace RiverLevelsSkill
                         return Level(log, resource.River("Dee"));
                     case "LevelNorthTyneIntent":
                         return Level(log, resource.River("North Tyne"));
+                    case "LevelIntent":
+                        return Level(log, resource.River(request.Intent.Slots["river"].Value));
                 }
             }
 

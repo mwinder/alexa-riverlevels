@@ -1,8 +1,17 @@
 {
   "intents": [
-    { "intent": "LevelCloughIntent"},
-    { "intent": "LevelDeeIntent"},
-    { "intent": "LevelNorthTyneIntent"},
+    { "intent": "LevelCloughIntent" },
+    { "intent": "LevelDeeIntent" },
+    { "intent": "LevelNorthTyneIntent" },
+    {
+      "intent": "LevelIntent",
+      "slots": [
+        {
+          "name": "river",
+          "type": "RIVER"
+        }
+      ]
+    },
     { "intent": "AMAZON.HelpIntent" },
     { "intent": "AMAZON.StopIntent" },
     { "intent": "AMAZON.CancelIntent" }

@@ -9,3 +9,6 @@ LevelDeeIntent Dee
 LevelNorthTyneIntent level for North Tyne
 LevelNorthTyneIntent river North Tyne
 LevelNorthTyneIntent North Tyne
+
+LevelIntent level for {river}
+LevelIntent river {river}
