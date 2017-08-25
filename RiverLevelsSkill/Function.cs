@@ -136,9 +136,13 @@ namespace RiverLevelsSkill
                 StopMessage = "See you on the river!",
                 Rivers = new List<RiverResource>
                 {
-                    new RiverResource { Uuid = "4b50bd9e-9c88-4795-93e0-b1e5c213e9ed", Name = "Clough",  },
-                    new RiverResource { Uuid = "75148ca0-ee5e-4344-8534-db9a59ed4cd0", Name = "Dee",  },
-                    new RiverResource { Uuid = "9a417b1b-464e-4f49-be17-bbb38241e500", Name = "North Tyne",  }
+                    new RiverResource { Uuid = "4b50bd9e-9c88-4795-93e0-b1e5c213e9ed", Name = "Clough" },
+                    new RiverResource { Uuid = "dd32f5a5-a507-4d87-b718-dd4adf9631dc", Name = "Crake" },
+                    new RiverResource { Uuid = "75148ca0-ee5e-4344-8534-db9a59ed4cd0", Name = "Dee" },
+                    new RiverResource { Uuid = "7ea17714-96c1-4e4f-a7df-a10b05251348", Name = "Lune" },
+                    new RiverResource { Uuid = "9a417b1b-464e-4f49-be17-bbb38241e500", Name = "North Tyne" },
+                    new RiverResource { Uuid = "60d6bb57-a6c5-43a2-8969-59d2cf8509c4", Name = "Rawthey" },
+                    new RiverResource { Uuid = "3ac9af6d-df37-49a8-86f3-222e52744cc4", Name = "Ribble"},
                 }
             };
         }
