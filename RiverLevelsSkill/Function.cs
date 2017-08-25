@@ -118,7 +118,7 @@ namespace RiverLevelsSkill
                 Version = "1.0",
                 Response = new ResponseBody
                 {
-                    ShouldEndSession = false,
+                    ShouldEndSession = true,
                     OutputSpeech = new PlainTextOutputSpeech
                     {
                         Text = $"The river {river.data.river}, {river.data.section} is {river.data.state.text}, {river.data.state.value}",
