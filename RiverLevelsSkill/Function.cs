@@ -59,7 +59,8 @@ namespace RiverLevelsSkill
                     case "LevelNorthTyneIntent":
                         return Level(log, resource.River("North Tyne"));
                     case "LevelIntent":
-                        return Level(log, resource.River(request.Intent.Slots["river"].Value));
+                        return Level(log, resource.River(request.Intent.Slots["river"].Value))
+                            ?? Unknown(resource);
                 }
             }
 
@@ -101,6 +102,9 @@ namespace RiverLevelsSkill
 
         private static SkillResponse Level(ILambdaLogger log, RiverResource resource)
         {
+            if (resource == RiverResource.Unknown)
+                return null;
+
             var client = new HttpClient();
             var requestUri = new Uri($"{ApiUrl}/river/{resource.Uuid}");
 
@@ -127,12 +131,29 @@ namespace RiverLevelsSkill
             };
         }
 
+        private static SkillResponse Unknown(RootResource resource)
+        {
+            return new SkillResponse
+            {
+                Version = "1.0",
+                Response = new ResponseBody
+                {
+                    ShouldEndSession = true,
+                    OutputSpeech = new PlainTextOutputSpeech
+                    {
+                        Text = resource.UnknownMessage
+                    }
+                }
+            };
+        }
+
         private static IEnumerable<RootResource> Resources()
         {
             yield return new RootResource("en-GB")
             {
                 Description = "UK river levels",
                 HelpMessage = "Ask me for the level of your favourite river",
+                UnknownMessage = "Sorry, I don't know about that river",
                 StopMessage = "See you on the river!",
                 Rivers = new List<RiverResource>
                 {
@@ -158,6 +179,7 @@ namespace RiverLevelsSkill
         public string Language { get; set; }
         public string Description { get; set; }
         public string HelpMessage { get; set; }
+        public string UnknownMessage { get; set; }
         public string StopMessage { get; set; }
         public IEnumerable<RiverResource> Rivers { get; set; }
 
@@ -170,7 +192,7 @@ namespace RiverLevelsSkill
 
     public class RiverResource
     {
-        public static RiverResource Unknown => new RiverResource { Name = "Unknown" };
+        public static readonly RiverResource Unknown = new RiverResource { Name = "Unknown" };
 
         public string Name { get; set; }
         public string Uuid { get; set; }
