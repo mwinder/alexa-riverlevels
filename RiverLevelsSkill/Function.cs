@@ -163,7 +163,8 @@ namespace RiverLevelsSkill
 
         public RiverResource River(string river)
         {
-            return Rivers.SingleOrDefault(x => x.Name == river) ?? RiverResource.Unknown;
+            return Rivers.SingleOrDefault(x => x.Name.ToLowerInvariant() == river.ToLowerInvariant())
+                ?? RiverResource.Unknown;
         }
     }
 
