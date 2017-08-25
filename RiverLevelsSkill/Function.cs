@@ -52,12 +52,7 @@ namespace RiverLevelsSkill
                         return Stop(resource);
                     case "AMAZON.HelpIntent":
                         return Help(resource);
-                    case "LevelCloughIntent":
-                        return Level(log, resource.River("Clough"));
-                    case "LevelDeeIntent":
-                        return Level(log, resource.River("Dee"));
-                    case "LevelNorthTyneIntent":
-                        return Level(log, resource.River("North Tyne"));
+
                     case "LevelIntent":
                         return Level(log, resource.River(request.Intent.Slots["river"].Value))
                             ?? Unknown(resource);

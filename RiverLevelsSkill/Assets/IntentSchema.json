@@ -1,8 +1,5 @@
 {
   "intents": [
-    { "intent": "LevelCloughIntent" },
-    { "intent": "LevelDeeIntent" },
-    { "intent": "LevelNorthTyneIntent" },
     {
       "intent": "LevelIntent",
       "slots": [
